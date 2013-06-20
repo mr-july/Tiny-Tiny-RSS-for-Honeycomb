@@ -8,7 +8,6 @@ import com.actionbarsherlock.view.MenuItem;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -71,8 +70,8 @@ public class OfflineHeadlinesActivity extends OfflineActivity implements Offline
 
 				ft.commit();
 
-        setTitleById (feedId, isCat);
-        
+        updateActivityTitle (getActivityTitleForId (feedId, isCat));
+
 			}
 		}
 

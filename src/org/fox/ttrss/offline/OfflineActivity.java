@@ -1,11 +1,18 @@
 package org.fox.ttrss.offline;
 
+import org.fox.ttrss.ActivityTitle;
 import org.fox.ttrss.CommonActivity;
 import org.fox.ttrss.PreferencesActivity;
 import org.fox.ttrss.R;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+
+import com.actionbarsherlock.view.ActionMode;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -17,6 +24,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -29,11 +38,7 @@ import android.widget.EditText;
 import android.widget.SearchView;
 import android.widget.TextView;
 
-import com.actionbarsherlock.view.ActionMode;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-import java.util.Stack;
+import java.io.File;
 
 public class OfflineActivity extends CommonActivity {
 	private final String TAG = this.getClass().getSimpleName();
@@ -724,19 +729,54 @@ public class OfflineActivity extends CommonActivity {
 		return c;
 	}
 
-  protected void setTitleById (int id, boolean isCat) {
-    Cursor c;
+  protected ActivityTitle getActivityTitleForId (int id, boolean isCat) {
+    CharSequence title = null;
+    Drawable icon = null;
 
-    if (isCat) {
-      c = getCatById(id);
-    } else {
-      c = getFeedById(id);
+    if (id > 0)
+    {
+      Cursor c = isCat ? getCatById (id) : getFeedById (id);
+
+      if (c != null)
+      {
+        title = c.getString (c.getColumnIndex ("title"));
+        c.close ();
+      }
+
+      icon = getResources ().getDrawable (R.drawable.ic_rss);
+
+      if (!isCat)
+      {
+        if (m_prefs.getBoolean ("download_feed_icons", false))
+        {
+
+          File iconFile = new File (getExternalCacheDir ().getAbsolutePath () +
+            OfflineFeedsFragment.ICON_PATH + id + ".ico");
+
+          if (iconFile.exists ())
+          {
+            icon = BitmapDrawable.createFromPath (iconFile.getAbsolutePath ());
+          }
+        }
+      }
     }
 
-    if (c != null) {
-      setTitle(c.getString(c.getColumnIndex("title")));
-      c.close();
+    if (title == null)
+    {
+      title = getResources ().getString (R.string.app_name);
     }
+
+    if (icon == null)
+    {
+      icon = getResources ().getDrawable (R.drawable.icon);
+    }
+
+    return new ActivityTitle (title, icon);
+  }
+
+  protected void updateActivityTitle (ActivityTitle at) {
+    setTitle(at.getTitle ());
+    getSupportActionBar().setIcon (at.getIcon ());
   }
 
 	protected Intent getShareIntent(Cursor article) {

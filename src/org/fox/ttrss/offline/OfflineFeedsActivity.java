@@ -1,9 +1,12 @@
 package org.fox.ttrss.offline;
 
+import org.fox.ttrss.ActivityTitle;
 import org.fox.ttrss.GlobalState;
 import org.fox.ttrss.R;
 
 import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.app.ActionBar;
+
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 
 import android.animation.LayoutTransition;
@@ -17,9 +20,9 @@ import android.provider.BaseColumns;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+
 import java.util.Stack;
 
 public class OfflineFeedsActivity extends OfflineActivity implements OfflineHeadlinesEventListener {
@@ -27,7 +30,8 @@ public class OfflineFeedsActivity extends OfflineActivity implements OfflineHead
 
 	private int m_actionbarRevertDepth = 0;
 	private SlidingMenu m_slidingMenu;
-  private Stack<CharSequence> titleStack = new Stack ();
+  private Stack<ActivityTitle> titleStack = new Stack ();
+  private ActivityTitle activityTitle;
 
 	@SuppressLint("NewApi")
 	@Override
@@ -97,6 +101,8 @@ public class OfflineFeedsActivity extends OfflineActivity implements OfflineHead
 
 		setLoadingStatus(R.string.blank, false);
 
+    activityTitle = getActivityTitleForId (0, false);
+
 		initMenu();
 
 		if (!isCompatMode() && !isSmallScreen()) {
@@ -120,8 +126,12 @@ public class OfflineFeedsActivity extends OfflineActivity implements OfflineHead
 	public void onBackPressed() {
 		if (m_actionbarRevertDepth > 0) {
       m_actionbarRevertDepth--;
-      getSupportActionBar().setDisplayHomeAsUpEnabled(m_actionbarRevertDepth > 0);
-      setTitle (titleStack.pop ());
+
+      ActionBar ab = getSupportActionBar();
+      ab.setDisplayHomeAsUpEnabled(m_actionbarRevertDepth > 0);
+
+      activityTitle = titleStack.pop ();
+      updateActivityTitle (activityTitle);
 
 			if (m_slidingMenu != null && !m_slidingMenu.isMenuShowing()) {
 				m_slidingMenu.showMenu();
@@ -198,8 +208,11 @@ public class OfflineFeedsActivity extends OfflineActivity implements OfflineHead
     m_actionbarRevertDepth++;
     getSupportActionBar().setDisplayHomeAsUpEnabled(m_actionbarRevertDepth > 0);
 
-    titleStack.push (getTitle ());
-    setTitleById (id, isCat);
+    titleStack.push (activityTitle);
+
+    activityTitle = getActivityTitleForId (id, isCat);
+
+    updateActivityTitle (activityTitle);
   }
 
 	public void onCatSelected(int catId, boolean openAsFeed) {
