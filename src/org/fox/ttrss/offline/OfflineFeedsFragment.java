@@ -34,10 +34,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class OfflineFeedsFragment extends Fragment implements OnItemClickListener, OnSharedPreferenceChangeListener {
+	public static final String ICON_PATH = "/icons/";
+  
 	private final String TAG = this.getClass().getSimpleName();
 	private SharedPreferences m_prefs;
 	private FeedListAdapter m_adapter;
-	private static final String ICON_PATH = "/icons/";
 	private int m_selectedFeedId;
 	private int m_catId = -1;
 	private boolean m_enableFeedIcons;
