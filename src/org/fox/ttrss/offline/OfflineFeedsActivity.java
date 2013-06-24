@@ -130,8 +130,14 @@ public class OfflineFeedsActivity extends OfflineActivity implements OfflineHead
       ActionBar ab = getSupportActionBar();
       ab.setDisplayHomeAsUpEnabled(m_actionbarRevertDepth > 0);
 
-      activityTitle = titleStack.pop ();
-      updateActivityTitle (activityTitle);
+      // FIXME: if activity was changed (e.g. the screen was rotated)
+      // then application FC occur.
+      if (!titleStack.empty ())
+      {
+        activityTitle = titleStack.pop ();
+
+        updateActivityTitle (activityTitle);
+      }
 
 			if (m_slidingMenu != null && !m_slidingMenu.isMenuShowing()) {
 				m_slidingMenu.showMenu();
