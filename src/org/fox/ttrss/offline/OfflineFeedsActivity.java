@@ -31,7 +31,6 @@ public class OfflineFeedsActivity extends OfflineActivity implements OfflineHead
 	private int m_actionbarRevertDepth = 0;
 	private SlidingMenu m_slidingMenu;
   private Stack<ActivityTitle> titleStack = new Stack ();
-  private ActivityTitle activityTitle;
 
 	@SuppressLint("NewApi")
 	@Override

@@ -1,6 +1,8 @@
 package org.fox.ttrss;
 
 
+import java.io.Serializable;
+
 import android.graphics.drawable.Drawable;
 
 
@@ -8,7 +10,7 @@ import android.graphics.drawable.Drawable;
  * this class is used to store activity title information (title string, icon,
  * etc.)
  */
-public class ActivityTitle
+public class ActivityTitle implements Serializable
 {
 
   /**
