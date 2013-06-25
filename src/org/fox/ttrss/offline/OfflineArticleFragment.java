@@ -1,5 +1,6 @@
 package org.fox.ttrss.offline;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
@@ -133,6 +134,8 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 		if (m_cursor.isFirst()) {
 			
 			TextView title = (TextView)view.findViewById(R.id.title);
+
+			final String link = m_cursor.getString(m_cursor.getColumnIndex("link"));
 			
 			if (title != null) {
 				
@@ -142,8 +145,6 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 					titleStr = m_cursor.getString(m_cursor.getColumnIndex("title")).substring(0, 200) + "...";
 				else
 					titleStr = m_cursor.getString(m_cursor.getColumnIndex("title"));
-				
-				final String link = m_cursor.getString(m_cursor.getColumnIndex("link"));
 				
 				title.setText(titleStr);
 				//title.setPaintFlags(title.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
@@ -281,7 +282,16 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 					"<body>" + articleContent + "<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p></body></html>";
 					
 				try {
-					web.loadDataWithBaseURL(null, content, "text/html", "utf-8", null);
+					String baseUrl = null;
+					
+					try {
+						URL url = new URL(link);
+						baseUrl = url.getProtocol() + "://" + url.getHost();
+					} catch (MalformedURLException e) {
+						//
+					}
+					
+					web.loadDataWithBaseURL(baseUrl, content, "text/html", "utf-8", null);
 				} catch (RuntimeException e) {					
 					e.printStackTrace();
 				}
