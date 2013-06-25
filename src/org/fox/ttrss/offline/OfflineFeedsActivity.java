@@ -76,6 +76,7 @@ public class OfflineFeedsActivity extends OfflineActivity implements OfflineHead
 		if (savedInstanceState != null) {
 
 			m_actionbarRevertDepth = savedInstanceState.getInt("actionbarRevertDepth");
+      titleStack = (Stack<ActivityTitle>)savedInstanceState.getSerializable ("titleStack");
 
 			if (m_slidingMenu != null) {
 				m_slidingMenu.showMenu();
@@ -172,6 +173,7 @@ public class OfflineFeedsActivity extends OfflineActivity implements OfflineHead
 		super.onSaveInstanceState(out);
 
 		out.putInt("actionbarRevertDepth", m_actionbarRevertDepth);
+    out.putSerializable ("titleStack", titleStack);
 
 		//if (m_slidingMenu != null )
 		//	out.putBoolean("slidingMenuVisible", m_slidingMenu.isMenuShowing());
