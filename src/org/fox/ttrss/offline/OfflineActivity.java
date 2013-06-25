@@ -207,7 +207,7 @@ public class OfflineActivity extends CommonActivity {
 
     activityTitle = (savedInstanceState != null &&
       savedInstanceState.containsKey ("activityTitle")) ?
-      (ActivityTitle)savedInstanceState.getSerializable ("activityTitle") :
+      (ActivityTitle)savedInstanceState.getParcelable ("activityTitle") :
       getActivityTitleForId (0, false);
 
     if (activityTitle != null)
@@ -220,7 +220,7 @@ public class OfflineActivity extends CommonActivity {
 	public void onSaveInstanceState(Bundle out) {
 		super.onSaveInstanceState(out);
 
-    out.putSerializable ("activityTitle", activityTitle);
+    out.putParcelable ("activityTitle", activityTitle);
 	}
 
 	protected void selectArticles(int feedId, boolean isCat, int mode) {
