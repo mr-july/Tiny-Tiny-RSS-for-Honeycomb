@@ -420,6 +420,7 @@ public class OfflineActivity extends CommonActivity {
 													int which) {
 
 												catchupFeed(feedId, isCat);
+                        onBackPressed ();
 
 											}
 										})
