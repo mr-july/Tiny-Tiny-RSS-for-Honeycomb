@@ -51,6 +51,8 @@ public class OfflineActivity extends CommonActivity {
 
 	private String m_lastImageHitTestUrl;
 
+  protected ActivityTitle activityTitle;
+
 	@SuppressLint("NewApi")
 	private class HeadlinesActionModeCallback implements ActionMode.Callback {
 
@@ -202,11 +204,23 @@ public class OfflineActivity extends CommonActivity {
 		} */
 
 		m_headlinesActionModeCallback = new HeadlinesActionModeCallback();
+
+    activityTitle = (savedInstanceState != null &&
+      savedInstanceState.containsKey ("activityTitle")) ?
+      (ActivityTitle)savedInstanceState.getParcelable ("activityTitle") :
+      getActivityTitleForId (0, false);
+
+    if (activityTitle != null)
+    {
+      updateActivityTitle (activityTitle);
+    }
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle out) {
 		super.onSaveInstanceState(out);
+
+    out.putParcelable ("activityTitle", activityTitle);
 	}
 
 	protected void selectArticles(int feedId, boolean isCat, int mode) {
@@ -778,6 +792,8 @@ public class OfflineActivity extends CommonActivity {
   protected void updateActivityTitle (ActivityTitle at) {
     setTitle(at.getTitle ());
     getSupportActionBar().setIcon (at.getIcon ());
+
+    activityTitle = at;
   }
 
 	protected Intent getShareIntent(Cursor article) {
