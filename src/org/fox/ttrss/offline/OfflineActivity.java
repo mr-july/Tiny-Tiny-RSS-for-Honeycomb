@@ -24,6 +24,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -33,8 +35,10 @@ import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.TextView;
 
@@ -770,7 +774,11 @@ public class OfflineActivity extends CommonActivity {
 
           if (iconFile.exists ())
           {
-            icon = BitmapDrawable.createFromPath (iconFile.getAbsolutePath ());
+            final float scale = getResources ().getDisplayMetrics ().density;
+            int size = (int) (20 * scale);
+            icon = new BitmapDrawable (getResources (),
+              Bitmap.createScaledBitmap (BitmapFactory.decodeFile (
+              iconFile.getAbsolutePath ()), size, size, false));
           }
         }
       }
