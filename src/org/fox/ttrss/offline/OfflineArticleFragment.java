@@ -1,13 +1,11 @@
 package org.fox.ttrss.offline;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.fox.ttrss.CommonActivity;
 import org.fox.ttrss.R;
 import org.fox.ttrss.util.ImageCacheService;
 import org.jsoup.Jsoup;
@@ -19,6 +17,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -42,6 +41,10 @@ import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebView.HitTestResult;
 import android.webkit.WebView;
 import android.widget.TextView;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class OfflineArticleFragment extends Fragment implements GestureDetector.OnDoubleTapListener {
 	private final String TAG = this.getClass().getSimpleName();
@@ -52,7 +55,7 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 	private Cursor m_cursor;
 	private OfflineActivity m_activity;
 	private GestureDetector m_detector;
-	
+
 	public void initialize(int articleId) {
 		m_articleId = articleId;
 	}
@@ -61,7 +64,7 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 	public boolean onContextItemSelected(MenuItem item) {
 		/* AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo(); */
-		
+
 		switch (item.getItemId()) {
 		case R.id.article_link_share:
 			m_activity.shareArticle(m_articleId);
@@ -69,8 +72,8 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 		case R.id.article_link_copy:
 			if (true) {
 				Cursor article = m_activity.getArticleById(m_articleId);
-				
-				if (article != null) {				
+
+				if (article != null) {
 					m_activity.copyToClipboard(article.getString(article.getColumnIndex("link")));
 					article.close();
 				}
@@ -81,27 +84,27 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 			return super.onContextItemSelected(item);
 		}
 	}
-	
+
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
 	    ContextMenuInfo menuInfo) {
-		
+
 		//getActivity().getMenuInflater().inflate(R.menu.article_link_context_menu, menu);
 		//menu.setHeaderTitle(m_cursor.getString(m_cursor.getColumnIndex("title")));
-		
+
 		String title = m_cursor.getString(m_cursor.getColumnIndex("title"));
-		
+
 		if (v.getId() == R.id.content) {
 			HitTestResult result = ((WebView)v).getHitTestResult();
 
 			if (result != null && (result.getType() == HitTestResult.IMAGE_TYPE || result.getType() == HitTestResult.SRC_IMAGE_ANCHOR_TYPE)) {
 				menu.setHeaderTitle(result.getExtra());
 				getActivity().getMenuInflater().inflate(R.menu.article_content_img_context_menu, menu);
-				
+
 				/* FIXME I have no idea how to do this correctly ;( */
-				
+
 				m_activity.setLastContentImageHitTestUrl(result.getExtra());
-				
+
 			} else {
 				menu.setHeaderTitle(title);
 				getActivity().getMenuInflater().inflate(R.menu.article_link_context_menu, menu);
@@ -110,45 +113,45 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 			menu.setHeaderTitle(title);
 			getActivity().getMenuInflater().inflate(R.menu.article_link_context_menu, menu);
 		}
-		
-		super.onCreateContextMenu(menu, v, menuInfo);	
-		
+
+		super.onCreateContextMenu(menu, v, menuInfo);
+
 	}
-	
+
 	@SuppressLint("NewApi")
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {    	
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		if (savedInstanceState != null) {
 			m_articleId = savedInstanceState.getInt("articleId");
 		}
-		
+
 		View view = inflater.inflate(R.layout.article_fragment, container, false);
 
-		m_cursor = m_activity.getReadableDb().query("articles LEFT JOIN feeds ON (feed_id = feeds."+BaseColumns._ID+")", 
-				new String[] { "articles.*", "feeds.title AS feed_title" }, "articles." + BaseColumns._ID + "=?", 
+		m_cursor = m_activity.getReadableDb().query("articles LEFT JOIN feeds ON (feed_id = feeds."+BaseColumns._ID+")",
+				new String[] { "articles.*", "feeds.title AS feed_title" }, "articles." + BaseColumns._ID + "=?",
 				new String[] { String.valueOf(m_articleId) }, null, null, null);
 
 		m_cursor.moveToFirst();
-		
+
 		if (m_cursor.isFirst()) {
-			
+
 			TextView title = (TextView)view.findViewById(R.id.title);
 
 			final String link = m_cursor.getString(m_cursor.getColumnIndex("link"));
-			
+
 			if (title != null) {
-				
+
 				String titleStr;
-				
+
 				if (m_cursor.getString(m_cursor.getColumnIndex("title")).length() > 200)
 					titleStr = m_cursor.getString(m_cursor.getColumnIndex("title")).substring(0, 200) + "...";
 				else
 					titleStr = m_cursor.getString(m_cursor.getColumnIndex("title"));
-				
+
 				title.setText(titleStr);
 				//title.setPaintFlags(title.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-				title.setOnClickListener(new OnClickListener() {					
+				title.setOnClickListener(new OnClickListener() {
 					@Override
 					public void onClick(View v) {
 						try {
@@ -163,23 +166,23 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 						}
 					}
 				});
-				
+
 				registerForContextMenu(title);
 			}
-			
+
 			TextView comments = (TextView)view.findViewById(R.id.comments);
-			
+
 			if (comments != null) {
 				comments.setVisibility(View.GONE);
 			}
-			
+
 			WebView web = (WebView)view.findViewById(R.id.content);
-			
+
 			if (web != null) {
-				
+
 				registerForContextMenu(web);
-				
-				web.setWebChromeClient(new WebChromeClient() {					
+
+				web.setWebChromeClient(new WebChromeClient() {
 					@Override
 	                public void onProgressChanged(WebView view, int progress) {
 	                	m_activity.setProgress(Math.round(((float)progress / 100f) * 10000));
@@ -188,138 +191,153 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 	                	}
 	                }
 				});
-				
+
 				web.setOnTouchListener(new View.OnTouchListener() {
 					@Override
 					public boolean onTouch(View v, MotionEvent event) {
 						return m_detector.onTouchEvent(event);
 					}
 				});
-				
-				String content;
-				String cssOverride = "";
-				
+
+        StringBuilder content = new StringBuilder ();
+				StringBuilder cssOverride = new StringBuilder ();
+
 				WebSettings ws = web.getSettings();
 				ws.setSupportZoom(true);
 				ws.setBuiltInZoomControls(true);
-				
+
 				if (!m_activity.isCompatMode())
 					ws.setDisplayZoomControls(false);
-				
+
 				web.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
 
-				TypedValue tv = new TypedValue();				
+				TypedValue tv = new TypedValue();
 			    getActivity().getTheme().resolveAttribute(R.attr.linkColor, tv, true);
-			    
+
 			    // prevent flicker in ics
 			    if (android.os.Build.VERSION.SDK_INT >= 11) {
 			    	web.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 			    }
 
-				if (m_prefs.getString("theme", "THEME_DARK").equals("THEME_DARK")) {
-					cssOverride = "body { background : transparent; color : #e0e0e0}";
-				} else if (m_prefs.getString("theme", "THEME_DARK").equals("THEME_DARK_GRAY")) {
-					cssOverride = "body { background : transparent; color : #e0e0e0}";
-				} else {
-					cssOverride = "body { background : transparent; }";
+				if (m_prefs.getString("theme", "THEME_DARK").startsWith ("THEME_DARK")) {
+					cssOverride.append ("body {color : #e0e0e0}");
 				}
+
 				web.setBackgroundColor(getResources().getColor(android.R.color.transparent));
-				
+
 				String hexColor = String.format("#%06X", (0xFFFFFF & tv.data));
-			    cssOverride += " a:link {color: "+hexColor+";} a:visited { color: "+hexColor+";}";
-				
-			    cssOverride += " table { width : 100%; }";
-			    
+			  cssOverride.append(" a:link {color: ").append(hexColor).append (
+          ";} a:visited { color: ").append(hexColor).append(";}");
+
+			  cssOverride.append(" table { width : 100%; }");
+
 				String articleContent = m_cursor.getString(m_cursor.getColumnIndex("content"));
 				Document doc = Jsoup.parse(articleContent);
-					
+
 				if (doc != null) {
 					if (m_prefs.getBoolean("offline_image_cache_enabled", false)) {
-						
+
 						Elements images = doc.select("img");
-						
+
 						for (Element img : images) {
 							String url = img.attr("src");
-							
-							if (ImageCacheService.isUrlCached(m_activity, url)) {						
+
+							if (ImageCacheService.isUrlCached(m_activity, url)) {
 								img.attr("src", "file://" + ImageCacheService.getCacheFileName(m_activity, url));
-							}						
+							}
 						}
 					}
-					
+
 					// thanks webview for crashing on <video> tag
 					Elements videos = doc.select("video");
-					
+
 					for (Element video : videos)
 						video.remove();
-					
+
 					articleContent = doc.toString();
 				}
-				
-				String align = m_prefs.getBoolean("justify_article_text", true) ? "text-align : justified" : "";
-				
+
+				String align = m_prefs.getBoolean("justify_article_text", true) ?
+          "text-align: justify;" : "";
+
+  			cssOverride.append("body {").append(align);
+
+        int fontSize = 14;
+
 				switch (Integer.parseInt(m_prefs.getString("font_size", "0"))) {
 				case 0:
-					cssOverride += "body { "+align+"; font-size : 14px; } ";
+          fontSize = 14;
 					break;
 				case 1:
-					cssOverride += "body { "+align+"; font-size : 18px; } ";
+          fontSize = 18;
 					break;
 				case 2:
-					cssOverride += "body { "+align+"; font-size : 21px; } ";
-					break;		
+          fontSize = 21;
+					break;
 				}
-				
-				content = 
-					"<html>" +
-					"<head>" +
-					"<meta content=\"text/html; charset=utf-8\" http-equiv=\"content-type\">" +
-					"<style type=\"text/css\">" +
-					"body { padding : 0px; margin : 0px; }" +
-					cssOverride +
-					"</style>" +
-					"</head>" +
-					"<body>" + articleContent + "<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p></body></html>";
-					
+
+        cssOverride.append("font-size: ").append (fontSize).append ("px;}");
+
+        AssetManager assetManager = m_activity.getAssets();
+
+        InputStream input;
+        try
+        {
+          input = assetManager.open ("template.html");
+
+          BufferedReader br = new BufferedReader (
+            new InputStreamReader (input, "UTF-8"));
+
+          String line = null;
+
+          while ((line = br.readLine ()) != null)
+          {
+            content.append (line).append ("\n");
+          }
+        } catch (IOException e)
+        {
+          e.printStackTrace ();
+        }
+
+
+        replaceMarker (content, "###STYLES###", cssOverride.toString ());
+        replaceMarker (content, "###LANG###", "ru");
+        replaceMarker (content, "###CONTENT###", articleContent);
+
 				try {
-					String baseUrl = null;
-					
-					try {
-						URL url = new URL(link);
-						baseUrl = url.getProtocol() + "://" + url.getHost();
-					} catch (MalformedURLException e) {
-						//
-					}
-					
-					web.loadDataWithBaseURL(baseUrl, content, "text/html", "utf-8", null);
-				} catch (RuntimeException e) {					
+					String baseUrl = "fake://ForJS";
+
+          web.getSettings().setJavaScriptEnabled(true);
+					web.loadDataWithBaseURL(baseUrl, content.toString (), "text/html",
+            "utf-8", null);
+				} catch (RuntimeException e) {
 					e.printStackTrace();
 				}
-				
-			
+
+
 			}
-			
+
 			TextView dv = (TextView)view.findViewById(R.id.date);
-			
+
 			if (dv != null) {
 				Date d = new Date(m_cursor.getInt(m_cursor.getColumnIndex("updated")) * 1000L);
 				DateFormat df = new SimpleDateFormat("MMM dd, HH:mm");
 				dv.setText(df.format(d));
 			}
-			
+
 			TextView tagv = (TextView)view.findViewById(R.id.tags);
-						
+
 			if (tagv != null) {
 				int feedTitleIndex = m_cursor.getColumnIndex("feed_title");
 
 				if (feedTitleIndex != -1 && m_isCat) {
 					tagv.setText(m_cursor.getString(feedTitleIndex));
-				} else {				
+				} else {
 					String tagsStr = m_cursor.getString(m_cursor.getColumnIndex("tags"));
 					tagv.setText(tagsStr);
 				}
-			}	
-			
+			}
+
 			TextView author = (TextView)view.findViewById(R.id.author);
 
 			if (author != null) {
@@ -329,72 +347,72 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 				else
 					author.setVisibility(View.GONE);
 			}
-		} 
-		
-		return view;    	
+		}
+
+		return view;
 	}
 
 	@Override
 	public void onDestroy() {
-		super.onDestroy();	
-		
+		super.onDestroy();
+
 		m_cursor.close();
 	}
-	
+
 	@Override
-	public void onSaveInstanceState (Bundle out) {		
+	public void onSaveInstanceState (Bundle out) {
 		super.onSaveInstanceState(out);
-		
+
 		out.putInt("articleId", m_articleId);
 	}
-	
+
 	@Override
 	public void onAttach(Activity activity) {
-		super.onAttach(activity);		
-		
+		super.onAttach(activity);
+
 		m_prefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
 
 		m_activity = (OfflineActivity) activity;
-		
-		m_detector = new GestureDetector(m_activity, new GestureDetector.OnGestureListener() {			
+
+		m_detector = new GestureDetector(m_activity, new GestureDetector.OnGestureListener() {
 			@Override
 			public boolean onSingleTapUp(MotionEvent e) {
 				// TODO Auto-generated method stub
 				return false;
 			}
-			
+
 			@Override
 			public void onShowPress(MotionEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
 					float distanceY) {
 				// TODO Auto-generated method stub
 				return false;
 			}
-			
+
 			@Override
-			public void onLongPress(MotionEvent e) {			
-				m_activity.openContextMenu(getView());		
+			public void onLongPress(MotionEvent e) {
+				m_activity.openContextMenu(getView());
 			}
-			
+
 			@Override
 			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
 					float velocityY) {
 				// TODO Auto-generated method stub
 				return false;
 			}
-			
+
 			@Override
 			public boolean onDown(MotionEvent e) {
 				// TODO Auto-generated method stub
 				return false;
 			}
 		});
-		
+
 		m_detector.setOnDoubleTapListener(this);
 	}
 
@@ -415,4 +433,25 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+
+  /**
+   * replace all occurrences of given marker in string builder with given
+   * string
+   *
+   * @param content       content to be operated
+   * @param marker        marker to be replaced
+   * @param replacement   new value for marker
+   */
+  private void replaceMarker (StringBuilder content, String marker,
+    String replacement)
+  {
+    int start = content.indexOf (marker, 0);
+
+    while (start >= 0)
+    {
+      content.replace (start, start + marker.length (), replacement);
+      start = content.indexOf (marker, start + replacement.length ());
+    }
+  }
 }
