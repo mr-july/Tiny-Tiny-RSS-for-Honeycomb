@@ -35,7 +35,7 @@ import android.widget.TextView;
 
 public class OfflineFeedsFragment extends Fragment implements OnItemClickListener, OnSharedPreferenceChangeListener {
 	public static final String ICON_PATH = "/icons/";
-  
+
 	private final String TAG = this.getClass().getSimpleName();
 	private SharedPreferences m_prefs;
 	private FeedListAdapter m_adapter;
@@ -57,35 +57,211 @@ public class OfflineFeedsFragment extends Fragment implements OnItemClickListene
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
-				.getMenuInfo();
-		switch (item.getItemId()) {
-		case R.id.browse_articles:
-			if (true) {
-				int feedId = getFeedIdAtPosition(info.position);
-				if (feedId != -10000) {
-					m_activity.openFeedArticles(feedId, false);
-				}
-			}
-			return true;
-		case R.id.browse_headlines:
-			if (true) {
-				int feedId = getFeedIdAtPosition(info.position);
-				if (feedId != -10000) {
-					m_activity.onFeedSelected(feedId);
-				}
-			}
-			return true;
-		case R.id.catchup_feed:
-			int feedId = getFeedIdAtPosition(info.position);
-			if (feedId != -10000) {
-				m_activity.catchupFeed(feedId, false);
-			}
-			return true;
-		default:
-			Log.d(TAG, "onContextItemSelected, unhandled id=" + item.getItemId());
-			return super.onContextItemSelected(item);
-		}
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+
+  	int feedId =
+      info != null ? getFeedIdAtPosition(info.position) : m_selectedFeedId;
+
+    switch (item.getItemId ())
+    {
+      case R.id.browse_articles:
+        if (feedId != -10000)
+        {
+          m_activity.openFeedArticles (feedId, false);
+        }
+        return true;
+      case R.id.browse_headlines:
+        if (feedId != -10000)
+        {
+          m_activity.onFeedSelected (feedId);
+        }
+        return true;
+      case R.id.catchup_feed:
+        if (feedId != -10000)
+        {
+          m_activity.catchupFeed (feedId, false);
+        }
+        return true;
+
+      case R.id.feed_lang_be:
+        m_activity.storeFeedLang (feedId, "be");
+        return true;
+
+      case R.id.feed_lang_bn:
+        m_activity.storeFeedLang (feedId, "bn");
+        return true;
+
+      case R.id.feed_lang_ca:
+        m_activity.storeFeedLang (feedId, "ca");
+        return true;
+
+      case R.id.feed_lang_cs:
+        m_activity.storeFeedLang (feedId, "cs");
+        return true;
+
+      case R.id.feed_lang_da:
+        m_activity.storeFeedLang (feedId, "da");
+        return true;
+
+      case R.id.feed_lang_de:
+        m_activity.storeFeedLang (feedId, "de");
+        return true;
+
+      case R.id.feed_lang_el_monoton:
+        m_activity.storeFeedLang (feedId, "el-monoton");
+        return true;
+
+      case R.id.feed_lang_el_polyton:
+        m_activity.storeFeedLang (feedId, "el-polyton");
+        return true;
+
+      case R.id.feed_lang_en_gb:
+        m_activity.storeFeedLang (feedId, "en-gb");
+        return true;
+
+      case R.id.feed_lang_en_us:
+        m_activity.storeFeedLang (feedId, "en-us");
+        return true;
+
+      case R.id.feed_lang_eo:
+        m_activity.storeFeedLang (feedId, "eo");
+        return true;
+
+      case R.id.feed_lang_es:
+        m_activity.storeFeedLang (feedId, "es");
+        return true;
+
+      case R.id.feed_lang_et:
+        m_activity.storeFeedLang (feedId, "et");
+        return true;
+
+      case R.id.feed_lang_fi:
+        m_activity.storeFeedLang (feedId, "fi");
+        return true;
+
+      case R.id.feed_lang_fr:
+        m_activity.storeFeedLang (feedId, "fr");
+        return true;
+
+      case R.id.feed_lang_grc:
+        m_activity.storeFeedLang (feedId, "grc");
+        return true;
+
+      case R.id.feed_lang_gu:
+        m_activity.storeFeedLang (feedId, "gu");
+        return true;
+
+      case R.id.feed_lang_hi:
+        m_activity.storeFeedLang (feedId, "hi");
+        return true;
+
+      case R.id.feed_lang_hu:
+        m_activity.storeFeedLang (feedId, "hu");
+        return true;
+
+      case R.id.feed_lang_hy:
+        m_activity.storeFeedLang (feedId, "hy");
+        return true;
+
+      case R.id.feed_lang_it:
+        m_activity.storeFeedLang (feedId, "it");
+        return true;
+
+      case R.id.feed_lang_kn:
+        m_activity.storeFeedLang (feedId, "kn");
+        return true;
+
+      case R.id.feed_lang_la:
+        m_activity.storeFeedLang (feedId, "la");
+        return true;
+
+      case R.id.feed_lang_lt:
+        m_activity.storeFeedLang (feedId, "lt");
+        return true;
+
+      case R.id.feed_lang_lv:
+        m_activity.storeFeedLang (feedId, "lv");
+        return true;
+
+      case R.id.feed_lang_ml:
+        m_activity.storeFeedLang (feedId, "ml");
+        return true;
+
+      case R.id.feed_lang_nb_no:
+        m_activity.storeFeedLang (feedId, "nb-no");
+        return true;
+
+      case R.id.feed_lang_nl:
+        m_activity.storeFeedLang (feedId, "nl");
+        return true;
+
+      case R.id.feed_lang_or:
+        m_activity.storeFeedLang (feedId, "or");
+        return true;
+
+      case R.id.feed_lang_pa:
+        m_activity.storeFeedLang (feedId, "pa");
+        return true;
+
+      case R.id.feed_lang_pl:
+        m_activity.storeFeedLang (feedId, "pl");
+        return true;
+
+      case R.id.feed_lang_pt:
+        m_activity.storeFeedLang (feedId, "pt");
+        return true;
+
+      case R.id.feed_lang_ro:
+        m_activity.storeFeedLang (feedId, "ro");
+        return true;
+
+      case R.id.feed_lang_ru:
+        m_activity.storeFeedLang (feedId, "ru");
+        return true;
+
+      case R.id.feed_lang_ru_en:
+        m_activity.storeFeedLang (feedId, "ru-en");
+        return true;
+
+      case R.id.feed_lang_sk:
+        m_activity.storeFeedLang (feedId, "sk");
+        return true;
+
+      case R.id.feed_lang_sl:
+        m_activity.storeFeedLang (feedId, "sl");
+        return true;
+
+      case R.id.feed_lang_sr_latn:
+        m_activity.storeFeedLang (feedId, "sr-latn");
+        return true;
+
+      case R.id.feed_lang_sv:
+        m_activity.storeFeedLang (feedId, "sv");
+        return true;
+
+      case R.id.feed_lang_ta:
+        m_activity.storeFeedLang (feedId, "ta");
+        return true;
+
+      case R.id.feed_lang_te:
+        m_activity.storeFeedLang (feedId, "te");
+        return true;
+
+      case R.id.feed_lang_tr:
+        m_activity.storeFeedLang (feedId, "tr");
+        return true;
+
+      case R.id.feed_lang_uk:
+        m_activity.storeFeedLang (feedId, "uk");
+        return true;
+
+      case R.id.feed_langs:
+          m_selectedFeedId = feedId;
+
+      default:
+        Log.d (TAG, "onContextItemSelected, unhandled id=" + item.getItemId ());
+        return super.onContextItemSelected (item);
+    }
 	}
 
 	@Override
