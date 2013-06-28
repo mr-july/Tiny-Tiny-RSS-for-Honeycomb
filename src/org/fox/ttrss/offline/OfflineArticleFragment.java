@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import org.fox.ttrss.util.DatabaseHelper;
 
 public class OfflineArticleFragment extends Fragment implements GestureDetector.OnDoubleTapListener {
 	private final String TAG = this.getClass().getSimpleName();
@@ -128,8 +129,12 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 
 		View view = inflater.inflate(R.layout.article_fragment, container, false);
 
-		m_cursor = m_activity.getReadableDb().query("articles LEFT JOIN feeds ON (feed_id = feeds."+BaseColumns._ID+")",
-				new String[] { "articles.*", "feeds.title AS feed_title" }, "articles." + BaseColumns._ID + "=?",
+		m_cursor = m_activity.getReadableDb().query(
+      "articles LEFT JOIN feeds ON (feed_id = feeds."+BaseColumns._ID+")",
+				new String[] {
+          "articles.*", "feeds.title AS feed_title",
+          "feeds.lang AS feed_lang" },
+        "articles." + BaseColumns._ID + "=?",
 				new String[] { String.valueOf(m_articleId) }, null, null, null);
 
 		m_cursor.moveToFirst();
@@ -301,7 +306,17 @@ public class OfflineArticleFragment extends Fragment implements GestureDetector.
 
 
         replaceMarker (content, "###STYLES###", cssOverride.toString ());
-        replaceMarker (content, "###LANG###", "ru");
+
+        String feedLang = DatabaseHelper.DEFAULT_LANG;
+        try
+        {
+          feedLang = m_cursor.getString (m_cursor.getColumnIndex ("feed_lang"));
+        } catch (Exception e)
+        {
+          e.printStackTrace ();
+        }
+        replaceMarker (content, "###LANG###", feedLang);
+
         replaceMarker (content, "###CONTENT###", articleContent);
 
 				try {
