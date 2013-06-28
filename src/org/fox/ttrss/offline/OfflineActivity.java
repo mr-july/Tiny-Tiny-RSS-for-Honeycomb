@@ -804,6 +804,15 @@ public class OfflineActivity extends CommonActivity {
     activityTitle = at;
   }
 
+  protected void storeFeedLang (int feedId, String lang) {
+    SQLiteStatement stmtUpdateFeed = getWritableDb ().compileStatement (
+      "UPDATE feeds SET lang = '" + lang +
+      "' WHERE " + BaseColumns._ID + " = ?");
+    stmtUpdateFeed.bindLong (1, feedId);
+    stmtUpdateFeed.execute ();
+    stmtUpdateFeed.close ();
+  }
+
 	protected Intent getShareIntent(Cursor article) {
 		if (article != null) {
 			String title = article.getString(article.getColumnIndex("title"));
